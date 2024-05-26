@@ -7,10 +7,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "tinker-tech-network-tf-state"
-    key            = "network.tfstate"
-    profile        = "network"
-    region         = "eu-west-2"
+    bucket  = "tinker-tech-network-tf-state"
+    key     = "network.tfstate"
+    profile = "network"
+    region  = "eu-west-2"
   }
 }
 
