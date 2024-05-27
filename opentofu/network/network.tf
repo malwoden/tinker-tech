@@ -14,34 +14,24 @@
 # Spare:
 # 10.0.12.0/22 10.0.12.0 - 10.0.15.255 10.0.12.1 - 10.0.15.254 1022
 
-locals {
-  hub_cidr_block = "10.0.0.0/20"
-  hub_private_subnets = {
+module "vpc" {
+  source     = "../modules/vpc"
+  name       = "hub"
+  cidr_block = "10.0.0.0/20"
+  private_subnets = {
     "a" = "10.0.0.0/23",
     "b" = "10.0.4.0/23",
     "c" = "10.0.8.0/23"
   }
-  hub_public_subnets = {
+  public_subnets = {
     "a" = "10.0.2.0/24",
     "b" = "10.0.6.0/24",
     "c" = "10.0.10.0/24",
   }
 }
 
-resource "aws_vpc" "hub" {
-  cidr_block = local.hub_cidr_block
-
-  tags = {
-    Name = "hub"
-  }
-}
-
-resource "aws_default_security_group" "hub" {
-  vpc_id = aws_vpc.hub.id
-}
-
 resource "aws_route_table" "hub_private" {
-  vpc_id = aws_vpc.hub.id
+  vpc_id = module.vpc.vpc_id
 
   route {
     cidr_block     = "0.0.0.0/0"
@@ -54,7 +44,7 @@ resource "aws_route_table" "hub_private" {
 }
 
 resource "aws_route_table" "hub_public" {
-  vpc_id = aws_vpc.hub.id
+  vpc_id = module.vpc.vpc_id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -66,41 +56,17 @@ resource "aws_route_table" "hub_public" {
   }
 }
 
-resource "aws_subnet" "hub_private" {
-  for_each = local.hub_private_subnets
-
-  vpc_id            = aws_vpc.hub.id
-  cidr_block        = each.value
-  availability_zone = "eu-west-2${each.key}"
-
-  tags = {
-    Name = "hub-private-${each.key}"
-  }
-}
-
-resource "aws_subnet" "hub_public" {
-  for_each = local.hub_public_subnets
-
-  vpc_id            = aws_vpc.hub.id
-  cidr_block        = each.value
-  availability_zone = "eu-west-2${each.key}"
-
-  tags = {
-    Name = "hub-public-${each.key}"
-  }
-}
-
 resource "aws_route_table_association" "hub_private" {
-  for_each = local.hub_private_subnets
+  for_each = module.vpc.private_subnet_ids
 
-  subnet_id      = aws_subnet.hub_private[each.key].id
+  subnet_id      = each.value
   route_table_id = aws_route_table.hub_private.id
 }
 
 resource "aws_route_table_association" "hub_public" {
-  for_each = local.hub_public_subnets
+  for_each = module.vpc.public_subnet_ids
 
-  subnet_id      = aws_subnet.hub_public[each.key].id
+  subnet_id      = each.value
   route_table_id = aws_route_table.hub_public.id
 }
 
@@ -113,7 +79,7 @@ resource "aws_eip" "hub_nat_a" {
 }
 
 resource "aws_internet_gateway" "hub_igw" {
-  vpc_id = aws_vpc.hub.id
+  vpc_id = module.vpc.vpc_id
 
   tags = {
     Name = "hub-igw"
@@ -122,7 +88,7 @@ resource "aws_internet_gateway" "hub_igw" {
 
 resource "aws_nat_gateway" "hub_nat_a" {
   allocation_id = aws_eip.hub_nat_a.id
-  subnet_id     = aws_subnet.hub_public["a"].id
+  subnet_id     = module.vpc.public_subnet_ids["a"]
 
   tags = {
     Name = "hub-nat"

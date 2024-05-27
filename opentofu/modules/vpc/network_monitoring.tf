@@ -1,16 +1,16 @@
-resource "aws_flow_log" "hub" {
-  iam_role_arn    = aws_iam_role.hub_flow_logs.arn
-  log_destination = aws_cloudwatch_log_group.hub_flow_logs.arn
+resource "aws_flow_log" "this" {
+  iam_role_arn    = aws_iam_role.flow_logs.arn
+  log_destination = aws_cloudwatch_log_group.flow_logs.arn
   traffic_type    = "ALL"
-  vpc_id          = aws_vpc.hub.id
+  vpc_id          = aws_vpc.this.id
 }
 
-resource "aws_cloudwatch_log_group" "hub_flow_logs" {
-  name              = "flow-logs/vpc/hub"
+resource "aws_cloudwatch_log_group" "flow_logs" {
+  name              = "flow-logs/vpc/${var.name}"
   retention_in_days = 365
 }
 
-data "aws_iam_policy_document" "hub_flow_logs_assume_role" {
+data "aws_iam_policy_document" "flow_logs_assume_role" {
   statement {
     effect = "Allow"
 
@@ -40,12 +40,12 @@ data "aws_iam_policy_document" "hub_flow_logs_assume_role" {
   }
 }
 
-resource "aws_iam_role" "hub_flow_logs" {
-  name               = "flow-logs-hub"
-  assume_role_policy = data.aws_iam_policy_document.hub_flow_logs_assume_role.json
+resource "aws_iam_role" "flow_logs" {
+  name               = "flow-logs-${var.name}"
+  assume_role_policy = data.aws_iam_policy_document.flow_logs_assume_role.json
 }
 
-data "aws_iam_policy_document" "hub_flow_logs" {
+data "aws_iam_policy_document" "flow_logs" {
   statement {
     effect = "Allow"
 
@@ -58,14 +58,14 @@ data "aws_iam_policy_document" "hub_flow_logs" {
     ]
 
     resources = [
-      aws_cloudwatch_log_group.hub_flow_logs.arn,
-      "${aws_cloudwatch_log_group.hub_flow_logs.arn}*"
+      aws_cloudwatch_log_group.flow_logs.arn,
+      "${aws_cloudwatch_log_group.flow_logs.arn}*"
     ]
   }
 }
 
-resource "aws_iam_role_policy" "hub_flow_logs" {
-  name   = "flow-logs-hub"
-  role   = aws_iam_role.hub_flow_logs.id
-  policy = data.aws_iam_policy_document.hub_flow_logs.json
+resource "aws_iam_role_policy" "flow_logs" {
+  name   = "flow-logs-${var.name}"
+  role   = aws_iam_role.flow_logs.id
+  policy = data.aws_iam_policy_document.flow_logs.json
 }
