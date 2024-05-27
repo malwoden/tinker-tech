@@ -8,6 +8,7 @@ resource "aws_s3_account_public_access_block" "this" {
 resource "aws_s3_bucket" "tf_state" {
   #checkov:skip=CKV2_AWS_6:Public account block is at the account level
   #checkov:skip=CKV2_AWS_61:Object sizes will never justify the IA move
+  #checkov:skip=CKV_AWS_144:Cross-region replication unecessary for this toy account
   bucket = "tinker-tech-network-tf-state"
 }
 
