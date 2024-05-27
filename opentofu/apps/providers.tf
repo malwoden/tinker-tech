@@ -18,3 +18,9 @@ provider "aws" {
   region  = "eu-west-2"
   profile = "apps"
 }
+
+provider "aws" {
+  region  = "eu-west-2"
+  profile = "network"
+  alias   = "network"
+}

@@ -26,3 +26,70 @@ module "vpc" {
     "c" = "10.8.40.0/24",
   }
 }
+
+data "aws_ec2_transit_gateway" "hub" {
+  filter {
+    name   = "tag:Name"
+    values = ["hub"]
+  }
+  provider = aws.network
+}
+
+resource "aws_ec2_transit_gateway_vpc_attachment" "hub" {
+  subnet_ids         = values(module.vpc.private_subnet_ids)
+  transit_gateway_id = data.aws_ec2_transit_gateway.hub.id
+  vpc_id             = module.vpc.vpc_id
+}
+
+resource "aws_ec2_transit_gateway_vpc_attachment_accepter" "apps_hub_accepter" {
+  transit_gateway_attachment_id = aws_ec2_transit_gateway_vpc_attachment.hub.id
+  provider                      = aws.network
+}
+
+resource "aws_internet_gateway" "apps_igw" {
+  vpc_id = module.vpc.vpc_id
+
+  tags = {
+    Name = "apps-igw"
+  }
+}
+
+resource "aws_route_table" "apps_private" {
+  vpc_id = module.vpc.vpc_id
+
+  route {
+    cidr_block         = "0.0.0.0/0"
+    transit_gateway_id = data.aws_ec2_transit_gateway.hub.id
+  }
+
+  tags = {
+    Name = "apps-private"
+  }
+}
+
+resource "aws_route_table" "apps_public" {
+  vpc_id = module.vpc.vpc_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.apps_igw.id
+  }
+
+  tags = {
+    Name = "apps-public"
+  }
+}
+
+resource "aws_route_table_association" "apps_private" {
+  for_each = module.vpc.private_subnet_ids
+
+  subnet_id      = each.value
+  route_table_id = aws_route_table.apps_private.id
+}
+
+resource "aws_route_table_association" "apps_public" {
+  for_each = module.vpc.public_subnet_ids
+
+  subnet_id      = each.value
+  route_table_id = aws_route_table.apps_public.id
+}

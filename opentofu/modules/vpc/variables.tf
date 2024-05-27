@@ -3,7 +3,7 @@ variable "name" {
   description = "The name of the VPC used in tags and flow log groups"
 
   validation {
-    condition = var.name == lower(var.name)
+    condition     = var.name == lower(var.name)
     error_message = "The name must be lowercase"
   }
 }

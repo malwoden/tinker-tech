@@ -51,6 +51,14 @@ resource "aws_route_table" "hub_public" {
     gateway_id = aws_internet_gateway.hub_igw.id
   }
 
+  dynamic "route" {
+    for_each = local.spoke_accounts
+    content {
+      cidr_block         = route.value.vpc_cidr
+      transit_gateway_id = aws_ec2_transit_gateway.hub.id
+    }
+  }
+
   tags = {
     Name = "hub-public"
   }
