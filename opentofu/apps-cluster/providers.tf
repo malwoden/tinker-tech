@@ -8,7 +8,7 @@ terraform {
 
   backend "s3" {
     bucket  = "tinker-tech-apps-tf-state"
-    key     = "apps.tfstate"
+    key     = "apps-cluster.tfstate"
     profile = "apps"
     region  = "eu-west-2"
   }
