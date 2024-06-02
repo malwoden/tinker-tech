@@ -10,9 +10,9 @@ spec:
     repoURL: https://github.com/malwoden/tinker-tech.git
     path: charts/argo-cd
     targetRevision: HEAD
-  helm:
-    valueFiles:
-      - charts/argo-cd/values.yaml
+    helm:
+      valueFiles:
+        - charts/argo-cd/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default
