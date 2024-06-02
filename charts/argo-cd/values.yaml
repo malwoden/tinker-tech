@@ -2,5 +2,5 @@ argo-cd:
   dex:
     enabled: false
   notifications:
-    enabled: true
+    enabled: false
   fullnameOverride: "argo-cd"
