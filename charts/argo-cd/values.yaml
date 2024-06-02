@@ -3,3 +3,4 @@ argo-cd:
     enabled: false
   notifications:
     enabled: true
+  fullnameOverride: "argo-cd"
