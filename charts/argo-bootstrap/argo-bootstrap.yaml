@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/malwoden/tinker-tech.git
-    path: charts/argo-bootstrap
+    path: argo-cd-applications/argo-bootstrap
     targetRevision: HEAD
   destination:
     server: https://kubernetes.default.svc
